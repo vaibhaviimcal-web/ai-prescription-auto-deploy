@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          String    @default("doctor") // doctor, patient, admin
+  phone         String?
+  specialization String?
+  licenseNumber String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  prescriptions Prescription[]
+  patients      Patient[]
+  
+  @@map("users")
+}
+
+model Patient {
+  id          String   @id @default(cuid())
+  name        String
+  age         Int
+  gender      String
+  phone       String?
+  email       String?
+  address     String?
+  bloodGroup  String?
+  allergies   String?
+  medicalHistory String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  doctorId    String
+  doctor      User     @relation(fields: [doctorId], references: [id])
+  
+  prescriptions Prescription[]
+  
+  @@map("patients")
+}
+
+model Prescription {
+  id          String   @id @default(cuid())
+  patientName String
+  patientAge  Int
+  patientGender String
+  symptoms    String
+  diagnosis   String
+  medications String   // JSON string
+  advice      String?
+  followUp    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  doctorId    String
+  doctor      User     @relation(fields: [doctorId], references: [id])
+  
+  patientId   String?
+  patient     Patient? @relation(fields: [patientId], references: [id])
+  
+  @@map("prescriptions")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  condition   String
+  symptoms    String
+  diagnosis   String
+  medications String   // JSON string
+  advice      String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("templates")
+}
